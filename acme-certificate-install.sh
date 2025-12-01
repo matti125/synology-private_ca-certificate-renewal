@@ -17,8 +17,21 @@ if [[ $# -lt 1 ]]; then
 fi
 DOM="$1"
 
-# --- Source and destination directories ---
-S=~certadmin/acme/"${DOM}_ecc"
+# Ask acme.sh for domain info and extract DOMAIN_CONF path for the source directory
+info="$(acme.sh --info -d "$DOM" 2>/dev/null || true)"
+DOMAIN_CONF="$(printf '%s\n' "$info" | sed -n 's/^DOMAIN_CONF=//p')"
+
+if [ -z "$DOMAIN_CONF" ] || [ ! -r "$DOMAIN_CONF" ]; then
+  echo "Could not determine DOMAIN_CONF for $DOM" >&2
+  echo "acme.sh --info output was:" >&2
+  printf '%s\n' "$info" >&2
+  exit 1
+fi
+
+# The per-domain certificate directory
+S="$(dirname "$DOMAIN_CONF")"
+#S=~certadmin/acme/"${DOM}_ecc"
+# --- Destination directory ---
 ARCHIVE_DIR=/usr/syno/etc/certificate/_archive
 D="${ARCHIVE_DIR}/$(cat ${ARCHIVE_DIR}/DEFAULT)"
 
