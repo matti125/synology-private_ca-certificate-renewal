@@ -17,8 +17,11 @@ if [[ $# -lt 1 ]]; then
 fi
 DOM="$1"
 
+ACME=/usr/local/share/acme.sh/acme.sh
+CONF_HOME=~certadmin/acme
+
 # Ask acme.sh for domain info and extract DOMAIN_CONF path for the source directory
-info="$(acme.sh --info -d "$DOM" 2>/dev/null || true)"
+info="$($ACME --config-home "$CONF_HOME" --info -d "$DOM" 2>/dev/null || true)"
 DOMAIN_CONF="$(printf '%s\n' "$info" | sed -n 's/^DOMAIN_CONF=//p')"
 
 if [ -z "$DOMAIN_CONF" ] || [ ! -r "$DOMAIN_CONF" ]; then
